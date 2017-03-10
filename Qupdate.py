@@ -8,106 +8,116 @@ import numpy as np
 import random
 import time
 
+grid_w = 6
+grid_h = 6
 
-Q = np.zeros((6,6,4))     #State/action map
-
-
-R = np.ones((6,6))        #Reward map 
-R *= -1                 #Moving gets small negative reward
-R[0][3:] = -100
-R[3][:3] = -100
-R[5][3:] = -100
-R[5][0] = 100
- 
-Reward = 0 
+reward = 0 
 moveNum = 0
- 
  
 alpha = 0.9
 gamma = 0.8
 epsilon = 0.5
 
-Row = 0
-Col = 0
+row = 0
+col = 0
 
-Row_Prime = 0
-Col_Prime = 0
+row_next = 0
+col_next = 0
 
-Action = 0
-Max_actions = {}
+class spot():
+    def __init__(self, row, col):
+        self.row = row
+        self.col = col
+        self.action = 0
+        self.reward = -1
+        self.quality = self.up, self.down, self.right, self.left = 0, 0, 0, 0
 
+    
+    def Qupdate():
+    '''
+    Updating the quality of the action that was just taken
+    '''
+    Current_Q = state[row][col].action
+    Next_Qmax = max(state[row_next][col_next].quality)
+    
+    Current_Q += alpha*(reward + gamma*Next_Qmax - Current_Q)
+    
+    Q[row][col].action = Current_Q
 
+    
+        
+state = [[spot(x,y) for y in range(0,grid_h)] for x in range(0,grid_w)]
+
+state[0][3].reward = -100
+state[0][4].reward = -100
+state[0][5].reward = -100
+state[3][0].reward = -100
+state[3][1].reward = -100
+state[3][2].reward = -100
+state[5][3].reward = -100
+state[5][4].reward = -100
+state[5][5].reward = -100    
+state[5][0].reward = 100
+     
+     
+ 
 def Policy():
     '''
         Deciding what action to take, (greedy or random)
     '''
-    global Action
     if(random.uniform(0,1) < epsilon): 
-        Action = random.randint(0,3)
+        action = random.randint(0,3)
     else: 
-        Max_actions = [i for i, x in enumerate(Q[Row][Col]) if x == max(Q[Row][Col])]
-        Action = random.choice(Max_actions)
+        Max_actions = [i for i, x in enumerate(state[row][col].quality) if x == max(state[row][col].quality)]
+        action = random.choice(Max_actions)
+    return action
 
-def TakeAction():
+def TakeAction(action):
     '''
     Checking boundries, changing state, and noting reward
     '''
-    global Reward, Row, Col, Row_Prime, Col_Prime
+    global reward, row, col, row_next, col_next
+    move = { 'up':0, 'right':1,'down':2,'left':3 }
     
-    if(Action == 0):
-        if(Row-1 >= 0): 
-            Row_Prime -= 1
+    if(action == move['up'] and row-1 >= 0):
+            row_next = row-1
             
-    if(Action == 1):
-        if(Col+1 < 6): 
-            Col_Prime += 1
+    elif(action == move['right'] and col+1 < 6):
+            col_next = col + 1
             
-    if(Action == 2):
-        if(Row+1 < 6): 
-            Row_Prime += 1
+    elif(action == move['down'] and row+1 < 6):
+            row_next = row + 1
             
-    if(Action == 3):
-        if(Col-1 >= 0): 
-            Col_Prime -= 1
+    elif(action == move['left'] and col-1 >= 0):
+            col_next = col - 1
             
-    Reward = R[Row_Prime][Col_Prime]
+    reward = state[row_next][col_next].reward
     
-    print("State:",Row, Col, Action, "State':", Row_Prime, Col_Prime, "R", Reward)
+    print("State:",row, col, action, "State':", row_next, col_next, "R", reward)
 
-def Qupdate():
-    '''
-    Updating the quality of the action that was just taken
-    '''
-    global Q
-    Current_Q = Q[Row][Col][Action]
-    Next_Qmax = max(Q[Row_Prime][Col_Prime])
-    
-    Current_Q += alpha*(Reward + gamma*Next_Qmax - Current_Q)
-    
-    Q[Row][Col][Action] = Current_Q
 
 def checkExit():
     '''
         Check to see if you Won/Lost or need to keep going
     '''
-    global moveNum, Row, Col, Row_Prime, Col_Prime
+    global moveNum, row, col, row_next, col_next, epsilon
     
-    if(abs(Reward) == 100):
-       if(Reward == 100):
+    if(abs(reward) == 100):
+       if(reward == 100):
            print "Victory!!!!!!!!!!!!!!!!!!!!!!!"
            time.sleep(3)
-       elif(Reward == -100):
+       elif(reward == -100):
            print "Doom"
            time.sleep(0.5)
        print (moveNum)
        
-       Row, Col, Row_Prime, Col_Prime = 0, 0, 0, 0
+       row, col, row_next, col_next = 0, 0, 0, 0
        
        moveNum = 0  
        
     else:
-        Row = Row_Prime
-        Col = Col_Prime
+        row = row_next
+        col = col_next
         moveNum += 1   
 
 while (1):       

@@ -7,6 +7,23 @@ Created on Sat Mar 04 19:06:51 2017
 
 import random
 import time
+import sys, pygame
+
+pygame.init()
+
+size = width, height = 1000, 700
+BLACK = 0, 0, 0
+WHITE = 255, 255, 255
+GREEN = 0, 255, 0
+RED = 255, 0, 0 
+
+offsetX = 70
+offsetY = 70
+spacing = 100
+radius = 30
+
+screen = pygame.display.set_mode(size)
+screen.fill(BLACK)
 
 grid_w = 6  # width of grid
 grid_h = 6  # height of grid
@@ -28,7 +45,9 @@ class spot():
     def __init__(self):
         self.reward = -1
         self.quality = [0, 0, 0, 0]
-    
+        # x coordinate
+        # y coordinate
+        
     def policy(self):
         '''
             Deciding what action to take, (greedy or random)
@@ -108,10 +127,19 @@ setattr(state[5][5], 'reward', -100)
 setattr(state[5][0], 'reward', 100)
 
 
-while (1):
-    global row, col, row_x, col_x
-    state[row][col].policy()
-    state[row][col].takeAction()
-    state[row][col].updateQ()
+while (True):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+             pygame.quit(); sys.exit();
+                        
+    # draw buttons
+    # for each
+        #draw pygame.draw.circle(screen, color, (x,y), radius, thickness)
+        #pygame.draw.lines(screen, color, closed, pointlist, thickness)
+    if(go):                    
+        global row, col, row_x, col_x
+        state[row][col].policy()
+        state[row][col].takeAction()
+        state[row][col].updateQ()
     
     
